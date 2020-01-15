@@ -1,0 +1,91 @@
+using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Data;
+using System.Drawing;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using System.Windows.Forms;
+
+namespace WindowsFormsApp6
+{
+    public partial class Form1 : Form
+    {
+        public class Osoba
+        {
+            string I, N, W;
+            public string Imie { get { return I; } set { I = value; } }
+            public string Nazwisko { get { return N; } set { N = value; } }
+            public string Wiek { get { return W; } set { W = value; } }
+            public Osoba(string nImie, string nNazwisko, string nWiek)
+            {
+                I = nImie;
+                N = nNazwisko;
+                W = nWiek;
+            }
+            public Osoba() { }
+        }
+        public List<Osoba> pr = new List<Osoba>();
+        public List<Osoba> ppr = new List<Osoba>();
+        public Form1()
+        {
+            InitializeComponent();
+        }
+
+        private void RichTextBox1_TextChanged(object sender, EventArgs e)
+        {
+            pr.Clear();
+            foreach (string linia in richTextBox1.Text.Split('\n'))
+            {
+                string[] wartosci = linia.Split(' ');
+                try
+                {
+                    pr.Add(new Osoba(wartosci[0], wartosci[1], wartosci[2]));
+                }
+                catch (Exception) { }
+            }
+            richTextBox2.Text = "";
+            foreach (Osoba prst in pr)
+                richTextBox2.Text += prst.Imie + " " + prst.Nazwisko + " " + prst.Wiek + "\n";
+        }
+
+        private void Zapisz_Click(object sender, EventArgs e)
+        {
+            if (pr.Count > 0)
+            {
+                SaveFileDialog sfd = new SaveFileDialog();
+                sfd.Filter = "plik tekstowy|*.txt|wszystkie pliki|*.*";
+                if (sfd.ShowDialog() == DialogResult.OK)
+                {
+                    System.Xml.Serialization.XmlSerializer ser = new System.Xml.Serialization.XmlSerializer(typeof(List<Osoba>));
+                    System.IO.TextWriter tw = new System.IO.StreamWriter(sfd.FileName);
+                    ser.Serialize(tw, pr);
+                    tw.Close();
+                }
+            }
+        }
+
+
+        private void Czytaj_Click(object sender, EventArgs e)
+        {
+            OpenFileDialog ofd = new OpenFileDialog();
+            ofd.Filter = "plik tekstowy|*.txt|wszystkie pliki|*.*";
+            if (ofd.ShowDialog() == DialogResult.OK)
+            {
+
+                System.Xml.Serialization.XmlSerializer ser = new System.Xml.Serialization.XmlSerializer(typeof(List<Osoba>));
+                System.IO.StreamReader sr = new System.IO.StreamReader(ofd.FileName);
+                ppr = (List<Osoba>)ser.Deserialize(sr);
+                sr.Close();
+                richTextBox1.Text = "";
+
+                foreach (Osoba prst in ppr)
+                {
+                    richTextBox1.Text += prst.Imie + " " + prst.Nazwisko + " " + prst.Wiek + "\n";
+
+                }
+            }
+        }
+    }
+}
